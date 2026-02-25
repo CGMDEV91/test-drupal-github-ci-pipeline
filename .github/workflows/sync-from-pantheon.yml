@@ -12,13 +12,16 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.PANTHEON_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.PANTHEON_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p 2222 codeserver.dev.bbf3c8c9-0d03-4b52-a521-0898f33b78ae.drush.in >> ~/.ssh/known_hosts
+          ssh-add ~/.ssh/id_rsa
 
       - name: Add Pantheon remote and fetch
         run: |
@@ -40,6 +43,7 @@ jobs:
       - name: Create branch with changes
         if: steps.diff.outputs.changed == 'true'
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/CGMDEV91/test-drupal-github-ci-pipeline.git
           BRANCH="autopilot/pantheon-sync-$(date +%Y%m%d-%H%M)"
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
           git config user.email "bot@github-actions.com"
