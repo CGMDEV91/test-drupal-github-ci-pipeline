@@ -18,10 +18,11 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.PANTHEON_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.PANTHEON_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p 2222 codeserver.dev.bbf3c8c9-0d03-4b52-a521-0898f33b78ae.drush.in >> ~/.ssh/known_hosts
-          ssh-add ~/.ssh/id_rsa
+          eval $(ssh-agent -s)
+          ssh-add ~/.ssh/id_ed25519
 
       - name: Add Pantheon remote and fetch
         run: |
